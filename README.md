@@ -1,2 +1,3 @@
-# dalil
-Todo lists on steroids
+# Dalil
+
+Todo lists on steroids.
