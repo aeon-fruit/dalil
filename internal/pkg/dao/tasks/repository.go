@@ -33,7 +33,7 @@ func New(options ...RepositoryOption) Repository {
 				Id:          1,
 				Name:        "Example",
 				StatusId:    0,
-				Description: "A example task",
+				Description: "An example task",
 				CreatedAt:   yesterday,
 				UpdatedAt:   yesterday,
 			},
