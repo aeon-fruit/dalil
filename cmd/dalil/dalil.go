@@ -1,9 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/aeon-fruit/dalil.git/internal/pkg/config"
 	controller "github.com/aeon-fruit/dalil.git/internal/pkg/controller/tasks"
 	dao "github.com/aeon-fruit/dalil.git/internal/pkg/dao/tasks"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/middleware"
@@ -14,6 +16,16 @@ import (
 )
 
 func main() {
+	appConfig := config.New(config.WithEnvVars())
+
+	addr := fmt.Sprintf(":%v", appConfig.AppPort)
+	handler := getHandler(appConfig)
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		fmt.Printf("%v", err)
+	}
+}
+
+func getHandler(appConfig config.AppConfig) http.Handler {
 	tasksDAO := dao.New()
 	tasksService := service.New(service.WithRepository(tasksDAO))
 	tasksCtrl := controller.New(controller.WithService(tasksService))
@@ -27,7 +39,7 @@ func main() {
 
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	r.Route("/", func(r chi.Router) {
+	r.Route("/api/", func(r chi.Router) {
 		r.Route("/tasks", func(r chi.Router) {
 			r.Get("/", tasksCtrl.GetAll)
 			r.Post("/", tasksCtrl.Add)
@@ -41,5 +53,5 @@ func main() {
 		})
 	})
 
-	http.ListenAndServe(":8080", r)
+	return r
 }
