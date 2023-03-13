@@ -11,8 +11,8 @@ type GetTaskResponse struct {
 	Name        string    `json:"name"`
 	StatusId    int       `json:"statusId"`
 	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	CreatedAt   time.Time `json:"createdAt,omitempty"`
+	UpdatedAt   time.Time `json:"updatedAt,omitempty"`
 }
 
 func EntityToGetTaskResponse(entity entity.Task) GetTaskResponse {

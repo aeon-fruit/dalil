@@ -132,6 +132,8 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == errors.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
+		} else if err == errors.ErrNotModified {
+			w.WriteHeader(http.StatusNotModified)
 		} else {
 			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		}
