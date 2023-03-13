@@ -106,6 +106,12 @@ func (repo *memoryRepository) Update(task entity.Task) (entity.Task, error) {
 		return entity.Task{}, common.ErrNotFound
 	}
 
+	if oldTask.Name == task.Name &&
+		oldTask.StatusId == task.StatusId &&
+		oldTask.Description == task.Description {
+		return entity.Task{}, common.ErrNotModified
+	}
+
 	task.UpdatedAt = time.Now()
 	task.CreatedAt = oldTask.CreatedAt
 	repo.tasks[task.Id] = task

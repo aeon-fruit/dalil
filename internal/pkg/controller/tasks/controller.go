@@ -130,6 +130,8 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if err == common.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
+		} else if err == common.ErrNotModified {
+			w.WriteHeader(http.StatusNotModified)
 		} else {
 			_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		}
