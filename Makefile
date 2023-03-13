@@ -68,8 +68,7 @@ gen-test: clean-gen-test
 
 docker-build:
 	echo "Build $(APP_NAME) Docker image"
-# TODO - Enable when Dockerfile is specified
-# docker build -t $(APP_NAME) .
+	docker build -t $(APP_NAME) .
 .PHONY: docker-build
 
 clean-gen-test:
