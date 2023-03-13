@@ -36,7 +36,7 @@ func New(options ...AppConfigOption) AppConfig {
 func WithEnvVars() AppConfigOption {
 	return func(appConfig *AppConfig) {
 		if appConfig != nil {
-			godotenv.Load("../../.env")
+			godotenv.Load()
 
 			appConfig.AppPort = getEnvInt(keyAppPort, defaultAppPort)
 		}
