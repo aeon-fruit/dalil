@@ -1,14 +1,16 @@
-package tasks
+package controller
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
-	"github.com/aeon-fruit/dalil.git/internal/pkg/common"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/common/constants"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/common/errors"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/middleware"
-	model "github.com/aeon-fruit/dalil.git/internal/pkg/model/tasks"
-	service "github.com/aeon-fruit/dalil.git/internal/pkg/service/tasks"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/model/marshaller"
+	model "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
+	service "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/service"
 )
 
 type Controller interface {
@@ -54,21 +56,21 @@ func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
 
 	entity, err := ctrl.service.GetById(id)
 	if err != nil {
-		if err == common.ErrNotFound {
+		if err == errors.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
 
-	_ = common.SerializeEntity(w, entity)
+	_ = marshaller.SerializeEntity(w, entity)
 }
 
 func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
 	entity, err := ctrl.service.GetAll()
 	if err != nil {
-		_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -77,19 +79,19 @@ func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_ = common.SerializeEntity(w, entity)
+	_ = marshaller.SerializeEntity(w, entity)
 }
 
 func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 	request := model.UpsertTaskRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		_ = common.SerializeFlatError(w, http.StatusBadRequest, err.Error())
+		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if !request.IsValid(nil) {
-		_ = common.SerializeFlatError(w, http.StatusBadRequest, "Invalid request content")
+		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, "Invalid request content")
 		return
 	}
 
@@ -97,13 +99,13 @@ func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 
 	entity, err := ctrl.service.Upsert(request)
 	if err != nil {
-		_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	w.Header().Set("Location", fmt.Sprintf("%s%s/%d", r.Host, r.RequestURI, entity.Id))
 	w.WriteHeader(http.StatusCreated)
-	_ = common.SerializeEntity(w, entity)
+	_ = marshaller.SerializeEntity(w, entity)
 }
 
 func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
@@ -115,12 +117,12 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 	request := model.UpsertTaskRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		_ = common.SerializeFlatError(w, http.StatusBadRequest, err.Error())
+		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	if !request.IsValid(&id) {
-		_ = common.SerializeFlatError(w, http.StatusBadRequest, "Invalid request content")
+		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, "Invalid request content")
 		return
 	}
 
@@ -128,15 +130,15 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 
 	entity, err := ctrl.service.Upsert(request)
 	if err != nil {
-		if err == common.ErrNotFound {
+		if err == errors.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
 
-	_ = common.SerializeEntity(w, entity)
+	_ = marshaller.SerializeEntity(w, entity)
 }
 
 func (ctrl *controllerImpl) RemoveById(w http.ResponseWriter, r *http.Request) {
@@ -147,10 +149,10 @@ func (ctrl *controllerImpl) RemoveById(w http.ResponseWriter, r *http.Request) {
 
 	err := ctrl.service.RemoveById(id)
 	if err != nil {
-		if err == common.ErrNotFound {
+		if err == errors.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 		}
 		return
 	}
@@ -163,16 +165,16 @@ func (ctrl *controllerImpl) RemoveByIds(w http.ResponseWriter, r *http.Request) 
 }
 
 func getIdOrStop(w http.ResponseWriter, r *http.Request) (id int, stop bool) {
-	id, err := middleware.GetId(r.Context())
+	id, err := middleware.GetPathParamInt(r.Context(), constants.Id)
 	if err == nil {
 		return
 	}
 
 	stop = true
-	if err == common.ErrNotFound {
-		_ = common.SerializeFlatError(w, http.StatusInternalServerError, "Unable to retrieve the Task Id")
+	if err == errors.ErrNotFound {
+		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, "Unable to retrieve the Task Id")
 	} else {
-		_ = common.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
 	}
 	return
 }

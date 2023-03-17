@@ -1,8 +1,8 @@
-package tasks
+package service
 
 import (
-	dao "github.com/aeon-fruit/dalil.git/internal/pkg/dao/tasks"
-	model "github.com/aeon-fruit/dalil.git/internal/pkg/model/tasks"
+	dao "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/dao"
+	model "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
 )
 
 type Service interface {

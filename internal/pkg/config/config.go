@@ -38,7 +38,7 @@ func WithEnvVars() AppConfigOption {
 		if appConfig != nil {
 			godotenv.Load()
 
-			appConfig.AppPort = getEnvInt(keyAppPort, defaultAppPort)
+			appConfig.AppPort = getEnvVarInt(keyAppPort, defaultAppPort)
 		}
 	}
 }
@@ -51,7 +51,7 @@ func WithAppPort(appPort int) AppConfigOption {
 	}
 }
 
-func getEnvInt(key string, defaultValue int) int {
+func getEnvVarInt(key string, defaultValue int) int {
 	if value, found := os.LookupEnv(key); found {
 		if intValue, err := strconv.Atoi(value); err == nil {
 			return intValue

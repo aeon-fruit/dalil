@@ -15,7 +15,9 @@ GO_DEBUG_OPTIONS=-gcflags='all=-N -l'
 TEST_MOCKS_PATH=$(APP_ROOT)/test/mocks
 
 # Dependencies variables
-DEP_VERSION_MOCKGEN=1.6.0
+DEP_VERSION_MOCKGEN=v1.6.0
+DEP_VERSION_GINKGO=v2.9.1
+DEP_VERSION_GOMEGA=v1.27.4
 
 all: build test
 .PHONY: all
@@ -25,7 +27,10 @@ deps:
 
 deps-test:
 # TODO - Enable when tests are implemented
-# $(GO) install github.com/golang/mock/mockgen@$(DEP_VERSION_MOCKGEN)
+#	$(GO) install github.com/golang/mock/mockgen@$(DEP_VERSION_MOCKGEN)
+#	$(GO) install github.com/onsi/ginkgo/v2/ginkgo@$(DEP_VERSION_GINKGO)
+#	$(GO) get github.com/onsi/ginkgo/v2@$(DEP_VERSION_GINKGO)
+#	$(GO) get github.com/onsi/gomega@$(DEP_VERSION_GOMEGA)
 .PHONY: deps-test
 
 build: download

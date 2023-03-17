@@ -1,10 +1,10 @@
-package common
+package marshaller
 
 import (
 	"encoding/json"
 	"net/http"
 
-	commonModels "github.com/aeon-fruit/dalil.git/internal/pkg/model/generic"
+	errorModel "github.com/aeon-fruit/dalil.git/internal/pkg/model/error"
 )
 
 func SerializeEntity(w http.ResponseWriter, entity any) error {
@@ -13,7 +13,7 @@ func SerializeEntity(w http.ResponseWriter, entity any) error {
 	return json.NewEncoder(w).Encode(entity)
 }
 
-func SerializeError(w http.ResponseWriter, errorResponse commonModels.ErrorResponse) error {
+func SerializeError(w http.ResponseWriter, errorResponse errorModel.Response) error {
 	w.WriteHeader(errorResponse.Code)
 	err := SerializeEntity(w, errorResponse)
 	if err != nil {
@@ -24,5 +24,5 @@ func SerializeError(w http.ResponseWriter, errorResponse commonModels.ErrorRespo
 }
 
 func SerializeFlatError(w http.ResponseWriter, httpStatusCode int, message string) error {
-	return SerializeError(w, commonModels.NewErrorResponse(httpStatusCode).WithMessage(message))
+	return SerializeError(w, errorModel.New(httpStatusCode).WithMessage(message))
 }
