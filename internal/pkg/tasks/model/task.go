@@ -1,9 +1,9 @@
-package tasks
+package model
 
 import (
 	"time"
 
-	"github.com/aeon-fruit/dalil.git/internal/pkg/dao/tasks/entity"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/tasks/dao/entity"
 )
 
 type GetTaskResponse struct {

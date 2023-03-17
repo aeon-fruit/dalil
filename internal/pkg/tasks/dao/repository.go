@@ -1,11 +1,11 @@
-package tasks
+package repository
 
 import (
 	"sort"
 	"time"
 
-	"github.com/aeon-fruit/dalil.git/internal/pkg/common"
-	"github.com/aeon-fruit/dalil.git/internal/pkg/dao/tasks/entity"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/common/errors"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/tasks/dao/entity"
 )
 
 type Repository interface {
@@ -70,7 +70,7 @@ func WithTasks(tasks map[int]entity.Task) RepositoryOption {
 func (repo *memoryRepository) GetById(id int) (entity.Task, error) {
 	task, found := repo.tasks[id]
 	if !found {
-		return entity.Task{}, common.ErrNotFound
+		return entity.Task{}, errors.ErrNotFound
 	}
 	return task, nil
 }
@@ -103,7 +103,7 @@ func (repo *memoryRepository) Insert(task entity.Task) (entity.Task, error) {
 func (repo *memoryRepository) Update(task entity.Task) (entity.Task, error) {
 	oldTask, found := repo.tasks[task.Id]
 	if !found {
-		return entity.Task{}, common.ErrNotFound
+		return entity.Task{}, errors.ErrNotFound
 	}
 
 	task.UpdatedAt = time.Now()
@@ -116,7 +116,7 @@ func (repo *memoryRepository) Update(task entity.Task) (entity.Task, error) {
 func (repo *memoryRepository) RemoveById(id int) (entity.Task, error) {
 	task, found := repo.tasks[id]
 	if !found {
-		return entity.Task{}, common.ErrNotFound
+		return entity.Task{}, errors.ErrNotFound
 	}
 	delete(repo.tasks, id)
 	return task, nil
