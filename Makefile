@@ -13,6 +13,7 @@ GO_DEBUG_OPTIONS=-gcflags='all=-N -l'
 
 # Testing variables
 TEST_MOCKS_PATH=$(APP_ROOT)/test/mocks
+MOCKGEN=mockgen
 
 # Dependencies variables
 DEP_VERSION_MOCKGEN=v1.6.0
@@ -27,7 +28,7 @@ deps:
 
 deps-test:
 # TODO - Enable when tests are implemented
-#	$(GO) install github.com/golang/mock/mockgen@$(DEP_VERSION_MOCKGEN)
+	$(GO) install github.com/golang/mock/mockgen@$(DEP_VERSION_MOCKGEN)
 #	$(GO) install github.com/onsi/ginkgo/v2/ginkgo@$(DEP_VERSION_GINKGO)
 #	$(GO) get github.com/onsi/ginkgo/v2@$(DEP_VERSION_GINKGO)
 #	$(GO) get github.com/onsi/gomega@$(DEP_VERSION_GOMEGA)
@@ -67,8 +68,9 @@ quick-test-race:
 
 gen-test: clean-gen-test
 	@mkdir -p $(TEST_MOCKS_PATH)
-# TODO - Enable when tests are implemented
-# mockgen -source=$(APP_ROOT)/internal/pkg/<package>/<file>.go -destination=$(TEST_MOCKS_PATH)/<package>/<file>_mock.go
+	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/dao/repository.go -destination=$(TEST_MOCKS_PATH)/tasks/dao/repository_mock.go
+	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/service/service.go -destination=$(TEST_MOCKS_PATH)/tasks/service/service_mock.go
+	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/controller/controller.go -destination=$(TEST_MOCKS_PATH)/tasks/controller/controller_mock.go
 .PHONY: gen-test
 
 docker-build:
