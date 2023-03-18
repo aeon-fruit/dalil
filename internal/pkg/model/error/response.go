@@ -3,6 +3,8 @@ package error
 import (
 	"net/http"
 	"time"
+
+	stubs "github.com/aeon-fruit/dalil.git/internal/pkg/stub/time"
 )
 
 type Response struct {
@@ -11,16 +13,36 @@ type Response struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func New(httpStatusCode int) Response {
-	return Response{
+type ResponseOption func(*Response)
+
+func New(httpStatusCode int, options ...ResponseOption) Response {
+	instance := Response{
 		Code:      httpStatusCode,
 		Message:   http.StatusText(httpStatusCode),
 		Timestamp: time.Now(),
 	}
+
+	for _, option := range options {
+		if option != nil {
+			option(&instance)
+		}
+	}
+
+	return instance
 }
 
-func (er Response) WithMessage(message string) Response {
-	er.Message = message
-	er.Timestamp = time.Now()
-	return er
+func WithMessage(message string) ResponseOption {
+	return func(response *Response) {
+		if response != nil {
+			response.Message = message
+		}
+	}
+}
+
+func UsingClock(clock stubs.Clock) ResponseOption {
+	return func(response *Response) {
+		if response != nil {
+			response.Timestamp = clock.Now()
+		}
+	}
 }

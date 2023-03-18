@@ -24,5 +24,5 @@ func SerializeError(w http.ResponseWriter, errorResponse errorModel.Response) er
 }
 
 func SerializeFlatError(w http.ResponseWriter, httpStatusCode int, message string) error {
-	return SerializeError(w, errorModel.New(httpStatusCode).WithMessage(message))
+	return SerializeError(w, errorModel.New(httpStatusCode, errorModel.WithMessage(message)))
 }
