@@ -27,11 +27,10 @@ deps:
 .PHONY: deps
 
 deps-test:
-# TODO - Enable when tests are implemented
 	$(GO) install github.com/golang/mock/mockgen@$(DEP_VERSION_MOCKGEN)
-#	$(GO) install github.com/onsi/ginkgo/v2/ginkgo@$(DEP_VERSION_GINKGO)
-#	$(GO) get github.com/onsi/ginkgo/v2@$(DEP_VERSION_GINKGO)
-#	$(GO) get github.com/onsi/gomega@$(DEP_VERSION_GOMEGA)
+	$(GO) install github.com/onsi/ginkgo/v2/ginkgo@$(DEP_VERSION_GINKGO)
+	$(GO) get github.com/onsi/ginkgo/v2@$(DEP_VERSION_GINKGO)
+	$(GO) get github.com/onsi/gomega@$(DEP_VERSION_GOMEGA)
 .PHONY: deps-test
 
 build: download
