@@ -2,6 +2,7 @@ package error
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	stubs "github.com/aeon-fruit/dalil.git/internal/pkg/stub/time"
@@ -15,10 +16,15 @@ type Response struct {
 
 type ResponseOption func(*Response)
 
-func New(httpStatusCode int, options ...ResponseOption) Response {
+func New(httpStatusCode int, message string, options ...ResponseOption) Response {
+	message = strings.TrimSpace(message)
+	if message == "" {
+		message = http.StatusText(httpStatusCode)
+	}
+
 	instance := Response{
 		Code:      httpStatusCode,
-		Message:   http.StatusText(httpStatusCode),
+		Message:   message,
 		Timestamp: time.Now(),
 	}
 
@@ -29,14 +35,6 @@ func New(httpStatusCode int, options ...ResponseOption) Response {
 	}
 
 	return instance
-}
-
-func WithMessage(message string) ResponseOption {
-	return func(response *Response) {
-		if response != nil {
-			response.Message = message
-		}
-	}
 }
 
 func UsingClock(clock stubs.Clock) ResponseOption {

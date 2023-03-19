@@ -11,6 +11,7 @@ import (
 	"github.com/aeon-fruit/dalil.git/internal/pkg/model/marshaller"
 	model "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
 	service "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/service"
+    errorModel "github.com/aeon-fruit/dalil.git/internal/pkg/model/error"
 )
 
 type Controller interface {
@@ -59,7 +60,7 @@ func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
 		if err == errors.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+			_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
 		}
 		return
 	}
@@ -70,7 +71,7 @@ func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
 func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
 	entity, err := ctrl.service.GetAll()
 	if err != nil {
-		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -86,12 +87,12 @@ func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 	request := model.UpsertTaskRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, err.Error())
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusBadRequest, err.Error()))
 		return
 	}
 
 	if !request.IsValid(nil) {
-		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, "Invalid request content")
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusBadRequest, "Invalid request content"))
 		return
 	}
 
@@ -99,7 +100,7 @@ func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 
 	entity, err := ctrl.service.Upsert(request)
 	if err != nil {
-		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
 		return
 	}
 
@@ -117,12 +118,12 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 	request := model.UpsertTaskRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
-		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, err.Error())
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusBadRequest, err.Error()))
 		return
 	}
 
 	if !request.IsValid(&id) {
-		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest, "Invalid request content")
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusBadRequest, "Invalid request content"))
 		return
 	}
 
@@ -135,7 +136,7 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 		} else if err == errors.ErrNotModified {
 			w.WriteHeader(http.StatusNotModified)
 		} else {
-			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+			_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
 		}
 		return
 	}
@@ -154,7 +155,7 @@ func (ctrl *controllerImpl) RemoveById(w http.ResponseWriter, r *http.Request) {
 		if err == errors.ErrNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
-			_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+			_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
 		}
 		return
 	}
@@ -174,9 +175,9 @@ func getIdOrStop(w http.ResponseWriter, r *http.Request) (id int, stop bool) {
 
 	stop = true
 	if err == errors.ErrNotFound {
-		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, "Unable to retrieve the Task Id")
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, "Unable to retrieve the Task Id"))
 	} else {
-		_ = marshaller.SerializeFlatError(w, http.StatusInternalServerError, err.Error())
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
 	}
 	return
 }

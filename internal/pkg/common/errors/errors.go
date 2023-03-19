@@ -3,6 +3,7 @@ package errors
 import "errors"
 
 var (
-	ErrNotFound    = errors.New("value not found")
-	ErrNotModified = errors.New("value not modified")
+	ErrNotFound        = errors.New("value not found")
+	ErrNotModified     = errors.New("value not modified")
+	ErrInvalidArgument = errors.New("invalid argument")
 )

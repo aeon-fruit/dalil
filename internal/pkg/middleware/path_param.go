@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/aeon-fruit/dalil.git/internal/pkg/common/errors"
+	errorModel "github.com/aeon-fruit/dalil.git/internal/pkg/model/error"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/model/marshaller"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/urlparams"
 )
@@ -66,8 +67,7 @@ func GetPathParamString(ctx context.Context, key string) (string, error) {
 
 func validateAndForward(w http.ResponseWriter, r *http.Request, next http.Handler, key string, value any, isValid proposition) {
 	if !isValid() {
-		_ = marshaller.SerializeFlatError(w, http.StatusBadRequest,
-			fmt.Sprintf("%v could not be retrieved", key))
+		_ = marshaller.SerializeError(w, errorModel.New(http.StatusBadRequest, fmt.Sprintf("%v could not be retrieved", key)))
 		return
 	}
 
