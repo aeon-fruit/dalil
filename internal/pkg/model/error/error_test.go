@@ -73,7 +73,7 @@ var _ = Describe("Error", func() {
 			})
 		})
 
-		When("WithClock is specified", func() {
+		When("UsingClock is specified", func() {
 			It("has a current timestamp", func() {
 				timestamp := time.UnixMilli(1679143523911)
 				clock := testClock{

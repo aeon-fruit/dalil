@@ -7,11 +7,11 @@ import (
 
 	"github.com/aeon-fruit/dalil.git/internal/pkg/common/constants"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/common/errors"
-	"github.com/aeon-fruit/dalil.git/internal/pkg/middleware"
+	reqctx "github.com/aeon-fruit/dalil.git/internal/pkg/context/request"
+	errorModel "github.com/aeon-fruit/dalil.git/internal/pkg/model/error"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/model/marshaller"
 	model "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
 	service "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/service"
-    errorModel "github.com/aeon-fruit/dalil.git/internal/pkg/model/error"
 )
 
 type Controller interface {
@@ -50,6 +50,14 @@ func WithService(service service.Service) ControllerOption {
 }
 
 func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
+	if ctrl == nil {
+		panic("Controller is nil")
+	}
+
+	if ctrl.service == nil {
+		panic("Service is nil")
+	}
+
 	id, stop := getIdOrStop(w, r)
 	if stop {
 		return
@@ -69,6 +77,14 @@ func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
+	if ctrl == nil {
+		panic("Controller is nil")
+	}
+
+	if ctrl.service == nil {
+		panic("Service is nil")
+	}
+
 	entity, err := ctrl.service.GetAll()
 	if err != nil {
 		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
@@ -84,6 +100,14 @@ func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
+	if ctrl == nil {
+		panic("Controller is nil")
+	}
+
+	if ctrl.service == nil {
+		panic("Service is nil")
+	}
+
 	request := model.UpsertTaskRequest{}
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -110,6 +134,14 @@ func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
+	if ctrl == nil {
+		panic("Controller is nil")
+	}
+
+	if ctrl.service == nil {
+		panic("Service is nil")
+	}
+
 	id, stop := getIdOrStop(w, r)
 	if stop {
 		return
@@ -145,6 +177,14 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ctrl *controllerImpl) RemoveById(w http.ResponseWriter, r *http.Request) {
+	if ctrl == nil {
+		panic("Controller is nil")
+	}
+
+	if ctrl.service == nil {
+		panic("Service is nil")
+	}
+
 	id, stop := getIdOrStop(w, r)
 	if stop {
 		return
@@ -168,9 +208,12 @@ func (ctrl *controllerImpl) RemoveByIds(w http.ResponseWriter, r *http.Request) 
 }
 
 func getIdOrStop(w http.ResponseWriter, r *http.Request) (id int, stop bool) {
-	id, err := middleware.GetPathParamInt(r.Context(), constants.Id)
+	value, err := reqctx.GetPathParam(r.Context(), constants.Id)
 	if err == nil {
-		return
+		id, err = value.Int()
+		if err == nil {
+			return
+		}
 	}
 
 	stop = true

@@ -12,7 +12,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
-	"github.com/aeon-fruit/dalil.git/internal/pkg/common/errors"
+	reqctx "github.com/aeon-fruit/dalil.git/internal/pkg/context/request"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/middleware"
 )
 
@@ -122,10 +122,13 @@ var _ = Describe("Middleware", func() {
 					})
 
 					It("augments the context with the parsed int from the value", func() {
-						value, err := middleware.GetPathParamInt(next.request.Context(), key)
+						value, err := reqctx.GetPathParam(next.request.Context(), key)
 
-						Expect(value).To(Equal(param))
 						Expect(err).ToNot(HaveOccurred())
+
+						intValue, err := value.Int()
+						Expect(err).ToNot(HaveOccurred())
+						Expect(intValue).To(Equal(param))
 					})
 				})
 			})
@@ -231,9 +234,9 @@ var _ = Describe("Middleware", func() {
 							})
 
 							It("augments the context with the value", func() {
-								value, err := middleware.GetPathParamString(next.request.Context(), key)
+								value, err := reqctx.GetPathParam(next.request.Context(), key)
 
-								Expect(value).To(Equal(param))
+								Expect(value.String()).To(Equal(param))
 								Expect(err).ToNot(HaveOccurred())
 							})
 						})
@@ -243,45 +246,4 @@ var _ = Describe("Middleware", func() {
 		}
 	})
 
-	Describe("GetPathParamInt", func() {
-		When("context argument is nil", func() {
-			ctx := context.Context(nil)
-			value, err := middleware.GetPathParamInt(ctx, key)
-
-			It("returns 0 and error", func() {
-				Expect(value).To(BeZero())
-				Expect(err).To(Equal(errors.ErrNotFound))
-			})
-		})
-
-		When("key does not match a value", func() {
-			value, err := middleware.GetPathParamInt(context.TODO(), key)
-
-			It("returns 0 and error", func() {
-				Expect(value).To(BeZero())
-				Expect(err).To(Equal(errors.ErrNotFound))
-			})
-		})
-	})
-
-	Describe("GetPathParamString", func() {
-		When("context argument is nil", func() {
-			ctx := context.Context(nil)
-			value, err := middleware.GetPathParamString(ctx, key)
-
-			It("returns 0 and error", func() {
-				Expect(value).To(BeZero())
-				Expect(err).To(Equal(errors.ErrNotFound))
-			})
-		})
-
-		When("key does not match a value", func() {
-			value, err := middleware.GetPathParamString(context.TODO(), key)
-
-			It("returns 0 and error", func() {
-				Expect(value).To(BeZero())
-				Expect(err).To(Equal(errors.ErrNotFound))
-			})
-		})
-	})
 })
