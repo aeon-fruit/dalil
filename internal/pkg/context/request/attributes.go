@@ -17,7 +17,11 @@ type PathParam struct {
 	parsed map[reflect.Kind]any
 }
 
-func (param PathParam) Int() (int, error) {
+func (param *PathParam) String() string {
+	return param.value
+}
+
+func (param *PathParam) Int() (int, error) {
 	value, found := param.parsed[reflect.Int]
 	if found {
 		return value.(int), nil
@@ -37,16 +41,19 @@ func (param PathParam) Int() (int, error) {
 
 }
 
-func (param PathParam) String() string {
-	return param.value
-}
-
 func SetPathParam(ctx context.Context, key string, value string) context.Context {
 	if ctx == nil {
 		ctx = context.Background()
 	}
 
-	return context.WithValue(ctx, ctxKey{key: key}, PathParam{value: value})
+	param, _ := ctx.Value(ctxKey{key: key}).(*PathParam)
+	if param != nil {
+		param.value = value
+		param.parsed = nil
+		return ctx
+	}
+
+	return context.WithValue(ctx, ctxKey{key: key}, &PathParam{value: value})
 }
 
 func GetPathParam(ctx context.Context, key string) (PathParam, error) {
@@ -54,10 +61,10 @@ func GetPathParam(ctx context.Context, key string) (PathParam, error) {
 		return PathParam{}, errors.ErrNotFound
 	}
 
-	value, ok := ctx.Value(ctxKey{key: key}).(PathParam)
-	if !ok {
+	param, _ := ctx.Value(ctxKey{key: key}).(*PathParam)
+	if param == nil {
 		return PathParam{}, errors.ErrNotFound
 	}
 
-	return value, nil
+	return *param, nil
 }
