@@ -14,6 +14,11 @@ import (
 	service "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/service"
 )
 
+const (
+	panicNilController = "Controller is nil"
+	panicNilService    = "Service is nil"
+)
+
 type Controller interface {
 	GetById(w http.ResponseWriter, r *http.Request)
 	GetAll(w http.ResponseWriter, r *http.Request)
@@ -51,11 +56,11 @@ func WithService(service service.Service) ControllerOption {
 
 func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
 	if ctrl == nil {
-		panic("Controller is nil")
+		panic(panicNilController)
 	}
 
 	if ctrl.service == nil {
-		panic("Service is nil")
+		panic(panicNilService)
 	}
 
 	id, stop := getIdOrStop(w, r)
@@ -78,11 +83,11 @@ func (ctrl *controllerImpl) GetById(w http.ResponseWriter, r *http.Request) {
 
 func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
 	if ctrl == nil {
-		panic("Controller is nil")
+		panic(panicNilController)
 	}
 
 	if ctrl.service == nil {
-		panic("Service is nil")
+		panic(panicNilService)
 	}
 
 	entity, err := ctrl.service.GetAll()
@@ -101,11 +106,11 @@ func (ctrl *controllerImpl) GetAll(w http.ResponseWriter, r *http.Request) {
 
 func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 	if ctrl == nil {
-		panic("Controller is nil")
+		panic(panicNilController)
 	}
 
 	if ctrl.service == nil {
-		panic("Service is nil")
+		panic(panicNilService)
 	}
 
 	request := model.UpsertTaskRequest{}
@@ -128,18 +133,18 @@ func (ctrl *controllerImpl) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Location", fmt.Sprintf("%s%s/%d", r.Host, r.RequestURI, entity.Id))
+	w.Header().Set("Location", fmt.Sprintf("%s/%d", r.Host, entity.Id))
 	w.WriteHeader(http.StatusCreated)
 	_ = marshaller.SerializeEntity(w, entity)
 }
 
 func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 	if ctrl == nil {
-		panic("Controller is nil")
+		panic(panicNilController)
 	}
 
 	if ctrl.service == nil {
-		panic("Service is nil")
+		panic(panicNilService)
 	}
 
 	id, stop := getIdOrStop(w, r)
@@ -178,11 +183,11 @@ func (ctrl *controllerImpl) Update(w http.ResponseWriter, r *http.Request) {
 
 func (ctrl *controllerImpl) RemoveById(w http.ResponseWriter, r *http.Request) {
 	if ctrl == nil {
-		panic("Controller is nil")
+		panic(panicNilController)
 	}
 
 	if ctrl.service == nil {
-		panic("Service is nil")
+		panic(panicNilService)
 	}
 
 	id, stop := getIdOrStop(w, r)
@@ -212,15 +217,11 @@ func getIdOrStop(w http.ResponseWriter, r *http.Request) (id int, stop bool) {
 	if err == nil {
 		id, err = value.Int()
 		if err == nil {
-			return
+			return id, false
 		}
 	}
 
-	stop = true
-	if err == errors.ErrNotFound {
-		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, "Unable to retrieve the Task Id"))
-	} else {
-		_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError, err.Error()))
-	}
-	return
+	_ = marshaller.SerializeError(w, errorModel.New(http.StatusInternalServerError,
+		"Unable to retrieve the Task Id"))
+	return 0, true
 }

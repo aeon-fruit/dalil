@@ -34,7 +34,7 @@ type UpsertTaskRequest struct {
 }
 
 func (dto *UpsertTaskRequest) IsValid(id *int) bool {
-	return dto != nil && ((id == nil && dto.Id == nil) || (*id == *dto.Id))
+	return dto != nil && ((id == nil && dto.Id == nil) || (id != nil && dto.Id != nil && *id == *dto.Id))
 }
 
 func (dto *UpsertTaskRequest) ToEntity() entity.Task {

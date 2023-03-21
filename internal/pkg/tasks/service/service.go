@@ -2,7 +2,7 @@ package service
 
 import (
 	dao "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/dao"
-	model "github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
+	"github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
 )
 
 type Service interface {
