@@ -33,11 +33,11 @@ type UpsertTaskRequest struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (dto *UpsertTaskRequest) IsValid(id *int) bool {
-	return dto != nil && ((id == nil && dto.Id == nil) || (id != nil && dto.Id != nil && *id == *dto.Id))
+func (dto UpsertTaskRequest) IsValid(id *int) bool {
+	return (id == nil && dto.Id == nil) || (id != nil && dto.Id != nil && *id == *dto.Id)
 }
 
-func (dto *UpsertTaskRequest) ToEntity() entity.Task {
+func (dto UpsertTaskRequest) ToEntity() entity.Task {
 	var id int
 	if dto.Id != nil {
 		id = *dto.Id
