@@ -257,6 +257,28 @@ var _ = Describe("Controller", func() {
 			})
 		})
 
+		When("the fields of the request payload are empty", func() {
+			It("responds with status BadRequest and an error response payload", func() {
+				body, err := json.Marshal(model.UpsertTaskRequest{})
+
+				Expect(err).ToNot(HaveOccurred())
+
+				request = httptest.NewRequest("", url, bytes.NewReader(body))
+
+				tasksCtrl.Add(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+
+				var payload errorModel.Response
+				err = json.NewDecoder(bytes.NewReader(recorder.Body.Bytes())).Decode(&payload)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(payload).NotTo(BeZero())
+				Expect(payload.Code).To(Equal(http.StatusBadRequest))
+				Expect(payload.Message).NotTo(BeEmpty())
+			})
+		})
+
 		When("id is nil in the request payload", func() {
 			It("responds with status BadRequest and an error response payload", func() {
 				id := 1
@@ -393,6 +415,30 @@ var _ = Describe("Controller", func() {
 					Expect(payload).NotTo(BeZero())
 					Expect(payload.Code).To(Equal(http.StatusBadRequest))
 					Expect(payload.Message).To(ContainSubstring("json"))
+				})
+			})
+
+			When("the fields of the request payload are empty", func() {
+				It("responds with status BadRequest and an error response payload", func() {
+					body, err := json.Marshal(model.UpsertTaskRequest{})
+
+					Expect(err).ToNot(HaveOccurred())
+
+					request = httptest.NewRequest("", url, bytes.NewReader(body))
+					ctx := reqctx.SetPathParam(request.Context(), constants.Id, "1")
+					request = request.WithContext(ctx)
+
+					tasksCtrl.Update(recorder, request)
+
+					Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+
+					var payload errorModel.Response
+					err = json.NewDecoder(bytes.NewReader(recorder.Body.Bytes())).Decode(&payload)
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(payload).NotTo(BeZero())
+					Expect(payload.Code).To(Equal(http.StatusBadRequest))
+					Expect(payload.Message).NotTo(BeEmpty())
 				})
 			})
 

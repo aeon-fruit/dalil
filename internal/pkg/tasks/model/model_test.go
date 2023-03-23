@@ -80,6 +80,12 @@ var _ = Describe("Model", func() {
 				inputId = &id
 			})
 
+			When("the model is empty", func() {
+				It("returns false", func() {
+					Expect(model.UpsertTaskRequest{}.IsValid(nil)).To(BeFalse())
+				})
+			})
+
 			When("the model id is nil", func() {
 
 				BeforeEach(func() {

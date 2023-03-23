@@ -39,7 +39,6 @@ func WithRepository(repository dao.Repository) ServiceOption {
 	}
 }
 
-// GetAll implements Service
 func (service *serviceImpl) GetAll() ([]model.GetTaskResponse, error) {
 	entities, err := service.repository.GetAll()
 	if err != nil {
@@ -53,7 +52,6 @@ func (service *serviceImpl) GetAll() ([]model.GetTaskResponse, error) {
 	return dto, nil
 }
 
-// GetById implements Service
 func (service *serviceImpl) GetById(id int) (model.GetTaskResponse, error) {
 	task, err := service.repository.GetById(id)
 	if err != nil {
@@ -63,19 +61,16 @@ func (service *serviceImpl) GetById(id int) (model.GetTaskResponse, error) {
 	return model.EntityToGetTaskResponse(task), nil
 }
 
-// RemoveById implements Service
 func (service *serviceImpl) RemoveById(id int) error {
 	_, err := service.repository.RemoveById(id)
 	return err
 }
 
-// RemoveByIds implements Service
 func (service *serviceImpl) RemoveByIds(ids []int) error {
 	_, err := service.repository.RemoveByIds(ids)
 	return err
 }
 
-// Upsert implements Service
 func (service *serviceImpl) Upsert(request model.UpsertTaskRequest) (model.GetTaskResponse, error) {
 	task := request.ToEntity()
 
