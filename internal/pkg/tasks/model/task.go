@@ -11,8 +11,8 @@ type GetTaskResponse struct {
 	Name        string    `json:"name"`
 	StatusId    int       `json:"statusId"`
 	Description string    `json:"description,omitempty"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	CreatedAt   time.Time `json:"createdAt,omitempty"`
+	UpdatedAt   time.Time `json:"updatedAt,omitempty"`
 }
 
 func EntityToGetTaskResponse(entity entity.Task) GetTaskResponse {
@@ -33,11 +33,13 @@ type UpsertTaskRequest struct {
 	Description string `json:"description,omitempty"`
 }
 
-func (dto *UpsertTaskRequest) IsValid(id *int) bool {
-	return dto != nil && ((id == nil && dto.Id == nil) || (*id == *dto.Id))
+func (dto UpsertTaskRequest) IsValid(id *int) bool {
+	return dto != (UpsertTaskRequest{}) &&
+		((id == nil && dto.Id == nil) ||
+			(id != nil && dto.Id != nil && *id == *dto.Id))
 }
 
-func (dto *UpsertTaskRequest) ToEntity() entity.Task {
+func (dto UpsertTaskRequest) ToEntity() entity.Task {
 	var id int
 	if dto.Id != nil {
 		id = *dto.Id

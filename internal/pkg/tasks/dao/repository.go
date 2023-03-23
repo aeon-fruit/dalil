@@ -25,28 +25,9 @@ type memoryRepository struct {
 type RepositoryOption func(*memoryRepository)
 
 func New(options ...RepositoryOption) Repository {
-	now := time.Now()
-	yesterday := now.AddDate(0, 0, -1)
 	instance := memoryRepository{
-		tasks: map[int]entity.Task{
-			1: {
-				Id:          1,
-				Name:        "Example",
-				StatusId:    0,
-				Description: "An example task",
-				CreatedAt:   yesterday,
-				UpdatedAt:   yesterday,
-			},
-			2: {
-				Id:          2,
-				Name:        "Sample",
-				StatusId:    0,
-				Description: "A sample task",
-				CreatedAt:   now,
-				UpdatedAt:   now,
-			},
-		},
-		seq: 3,
+		tasks: map[int]entity.Task{},
+		seq:   0,
 	}
 
 	for _, option := range options {
@@ -66,7 +47,6 @@ func WithTasks(tasks map[int]entity.Task) RepositoryOption {
 	}
 }
 
-// GetById implements Repository
 func (repo *memoryRepository) GetById(id int) (entity.Task, error) {
 	task, found := repo.tasks[id]
 	if !found {
@@ -75,7 +55,6 @@ func (repo *memoryRepository) GetById(id int) (entity.Task, error) {
 	return task, nil
 }
 
-// GetAll implements Repository
 func (repo *memoryRepository) GetAll() ([]entity.Task, error) {
 	var ids []int
 	var tasks []entity.Task
@@ -90,7 +69,6 @@ func (repo *memoryRepository) GetAll() ([]entity.Task, error) {
 	return tasks, nil
 }
 
-// Insert implements Repository
 func (repo *memoryRepository) Insert(task entity.Task) (entity.Task, error) {
 	task.Id, repo.seq = repo.seq, repo.seq+1
 	task.UpdatedAt = time.Now()
@@ -99,11 +77,16 @@ func (repo *memoryRepository) Insert(task entity.Task) (entity.Task, error) {
 	return task, nil
 }
 
-// Update implements Repository
 func (repo *memoryRepository) Update(task entity.Task) (entity.Task, error) {
 	oldTask, found := repo.tasks[task.Id]
 	if !found {
 		return entity.Task{}, errors.ErrNotFound
+	}
+
+	if oldTask.Name == task.Name &&
+		oldTask.StatusId == task.StatusId &&
+		oldTask.Description == task.Description {
+		return entity.Task{}, errors.ErrNotModified
 	}
 
 	task.UpdatedAt = time.Now()
@@ -112,7 +95,6 @@ func (repo *memoryRepository) Update(task entity.Task) (entity.Task, error) {
 	return oldTask, nil
 }
 
-// RemoveById implements Repository
 func (repo *memoryRepository) RemoveById(id int) (entity.Task, error) {
 	task, found := repo.tasks[id]
 	if !found {
@@ -122,7 +104,6 @@ func (repo *memoryRepository) RemoveById(id int) (entity.Task, error) {
 	return task, nil
 }
 
-// RemoveByIds implements Repository
 func (repo *memoryRepository) RemoveByIds(ids []int) ([]entity.Task, error) {
 	var tasks []entity.Task
 	for _, id := range ids {

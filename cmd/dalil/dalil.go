@@ -40,7 +40,7 @@ func getHandler(appConfig config.AppConfig) http.Handler {
 
 	r.Use(render.SetContentType(render.ContentTypeJSON))
 
-	r.Route("/api/", func(r chi.Router) {
+	v1 := func(r chi.Router) {
 		r.Route("/tasks", func(r chi.Router) {
 			r.Get("/", tasksCtrl.GetAll)
 			r.Post("/", tasksCtrl.Add)
@@ -52,6 +52,10 @@ func getHandler(appConfig config.AppConfig) http.Handler {
 				r.Delete("/", tasksCtrl.RemoveById)
 			})
 		})
+	}
+
+	r.Route("/api/", func(r chi.Router) {
+		r.Route("/v1/", v1)
 	})
 
 	return r
