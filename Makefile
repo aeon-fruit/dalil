@@ -13,6 +13,7 @@ GO_DEBUG_OPTIONS=-gcflags='all=-N -l'
 
 # Testing variables
 TEST_MOCKS_PATH=$(APP_ROOT)/test/mocks
+TEST_COVERAGE_PATH=$(APP_BUILD_PATH)/coverage
 MOCKGEN=mockgen
 
 # Dependencies variables
@@ -34,7 +35,7 @@ deps-test:
 .PHONY: deps-test
 
 build: download
-	@mkdir -p .build
+	@mkdir -p $(APP_BUILD_PATH)
 	$(GO) build -o $(APP_OUTPUT) $(APP_ROOT_FILES)
 .PHONY: build
 
@@ -72,6 +73,12 @@ gen-test: clean-gen-test
 	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/controller/controller.go -destination=$(TEST_MOCKS_PATH)/tasks/controller/controller_mock.go
 .PHONY: gen-test
 
+test-coverage: clean-test-coverage gen-test build
+	@mkdir -p $(TEST_COVERAGE_PATH)
+	$(GO) test ./internal/... -covermode=count -coverprofile=$(TEST_COVERAGE_PATH)/coverage.out
+	$(GO) tool cover -html $(TEST_COVERAGE_PATH)/coverage.out -o $(TEST_COVERAGE_PATH)/coverage.html
+.PHONY: test-coverage
+
 docker-build:
 	echo "Build $(APP_NAME) Docker image"
 	docker build -t $(APP_NAME) .
@@ -81,6 +88,10 @@ clean-gen-test:
 	rm -rf $(TEST_MOCKS_PATH)
 .PHONY: clean-gen-test
 
-clean: clean-gen-test
+clean-test-coverage:
+	rm -rf $(TEST_COVERAGE_PATH)
+.PHONY: clean-test-coverage
+
+clean: clean-gen-test clean-test-coverage
 	rm -rf $(APP_BUILD_PATH)
 .PHONY: clean
