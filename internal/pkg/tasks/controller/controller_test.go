@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -21,6 +22,16 @@ import (
 	"github.com/aeon-fruit/dalil.git/internal/pkg/tasks/model"
 	serviceMock "github.com/aeon-fruit/dalil.git/test/mocks/tasks/service"
 )
+
+const readerError = "the reader is always failing without fail"
+
+type errorReader struct {
+	io.Reader
+}
+
+func (errorReader) Read(p []byte) (n int, err error) {
+	return 0, fmt.Errorf(readerError)
+}
 
 var _ = Describe("Controller", func() {
 
@@ -239,6 +250,24 @@ var _ = Describe("Controller", func() {
 			request = httptest.NewRequest("", url, bytes.NewReader(body))
 		})
 
+		When("the request payload is not readable", func() {
+			It("responds with status BadRequest and an error response payload", func() {
+				request = httptest.NewRequest("", url, &errorReader{})
+
+				tasksCtrl.Add(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+
+				var payload errorModel.Response
+				err := json.NewDecoder(bytes.NewReader(recorder.Body.Bytes())).Decode(&payload)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(payload).NotTo(BeZero())
+				Expect(payload.Code).To(Equal(http.StatusBadRequest))
+				Expect(payload.Message).To(Equal(readerError))
+			})
+		})
+
 		When("the request payload format is wrong", func() {
 			It("responds with status BadRequest and an error response payload", func() {
 				request = httptest.NewRequest("", url, strings.NewReader(`{"id":"error"}`))
@@ -396,6 +425,26 @@ var _ = Describe("Controller", func() {
 			BeforeEach(func() {
 				ctx := reqctx.SetPathParam(request.Context(), constants.Id, "1")
 				request = request.WithContext(ctx)
+			})
+
+			When("the request payload is not readable", func() {
+				It("responds with status BadRequest and an error response payload", func() {
+					request = httptest.NewRequest("", url, &errorReader{})
+					ctx := reqctx.SetPathParam(request.Context(), constants.Id, "1")
+					request = request.WithContext(ctx)
+
+					tasksCtrl.Update(recorder, request)
+
+					Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+
+					var payload errorModel.Response
+					err := json.NewDecoder(bytes.NewReader(recorder.Body.Bytes())).Decode(&payload)
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(payload).NotTo(BeZero())
+					Expect(payload.Code).To(Equal(http.StatusBadRequest))
+					Expect(payload.Message).To(Equal(readerError))
+				})
 			})
 
 			When("the request payload format is wrong", func() {
@@ -615,10 +664,6 @@ var _ = Describe("Controller", func() {
 			})
 
 		})
-	})
-
-	Describe("RemoveByIds", func() {
-		// Unimplemented
 	})
 
 })

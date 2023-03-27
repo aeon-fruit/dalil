@@ -1,15 +1,18 @@
 package middleware
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
 
+	"github.com/aeon-fruit/dalil.git/internal/pkg/common/constants"
 	reqctx "github.com/aeon-fruit/dalil.git/internal/pkg/context/request"
 	errorModel "github.com/aeon-fruit/dalil.git/internal/pkg/model/error"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/model/marshaller"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/urlparams"
+	"github.com/go-logr/logr"
 )
 
 const (
@@ -25,20 +28,21 @@ func PathParamContextString(key string, pattern string) func(http.Handler) http.
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			value := urlparams.ParsePathParam(r, key)
 
-			if !isValid(value, pattern) {
+			ctx := r.Context()
+			if !isValid(ctx, value, pattern) {
 				_ = marshaller.SerializeError(w, errorModel.New(http.StatusBadRequest,
 					fmt.Sprintf("%v could not be retrieved", key)))
 				return
 			}
 
-			ctx := reqctx.SetPathParam(r.Context(), key, value)
+			ctx = reqctx.SetPathParam(ctx, key, value)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
 
-func isValid(value string, pattern string) bool {
+func isValid(ctx context.Context, value string, pattern string) bool {
 	if value == "" {
 		return false
 	}
@@ -49,5 +53,10 @@ func isValid(value string, pattern string) bool {
 	}
 
 	match, err := regexp.MatchString(pattern, value)
+	if err != nil {
+		logr.FromContextOrDiscard(ctx).Error(err, "Regex matching failed",
+			constants.Pattern, pattern,
+			constants.Value, value)
+	}
 	return match && err == nil
 }

@@ -23,12 +23,15 @@ var _ = Describe("ReqCtx", func() {
 
 	Describe("PathParam", func() {
 
+		var param reqctx.PathParam
+
 		BeforeEach(func() {
 			ctx := reqctx.SetPathParam(context.Background(), key, value)
 
 			Expect(ctx).NotTo(BeZero())
 
-			param, err := reqctx.GetPathParam(ctx, key)
+			var err error
+			param, err = reqctx.GetPathParam(ctx, key)
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(param.String()).To(Equal(value))
@@ -39,6 +42,12 @@ var _ = Describe("ReqCtx", func() {
 
 			When("an integer can be parsed from the underlying value", func() {
 				It("returns the int value and no error", func() {})
+			})
+
+			When("an integer was parsed from the underlying value", func() {
+				It("returns the same int value and no error", func() {
+					Expect(param.Int()).To(Equal(intValue))
+				})
 			})
 
 			When("an integer can be parsed from the underlying value", func() {

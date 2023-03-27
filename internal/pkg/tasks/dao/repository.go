@@ -14,7 +14,6 @@ type Repository interface {
 	Insert(task entity.Task) (entity.Task, error)
 	Update(task entity.Task) (entity.Task, error)
 	RemoveById(id int) (entity.Task, error)
-	RemoveByIds(ids []int) ([]entity.Task, error)
 }
 
 type memoryRepository struct {
@@ -102,16 +101,4 @@ func (repo *memoryRepository) RemoveById(id int) (entity.Task, error) {
 	}
 	delete(repo.tasks, id)
 	return task, nil
-}
-
-func (repo *memoryRepository) RemoveByIds(ids []int) ([]entity.Task, error) {
-	var tasks []entity.Task
-	for _, id := range ids {
-		task, err := repo.RemoveById(id)
-		if err != nil {
-			return nil, err
-		}
-		tasks = append(tasks, task)
-	}
-	return tasks, nil
 }

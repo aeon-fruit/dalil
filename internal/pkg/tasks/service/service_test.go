@@ -295,24 +295,4 @@ var _ = Describe("Service", func() {
 
 	})
 
-	Describe("RemoveByIds", func() {
-
-		When("an error happens while removing the selected dao's", func() {
-			It("returns the error", func() {
-				mockRepository.EXPECT().RemoveByIds(gomock.Any()).Return(nil, customErr)
-
-				Expect(tasksSvc.RemoveByIds([]int{id, id + 4, id * 3})).To(Equal(customErr))
-			})
-		})
-
-		When("removing the selected dao's is successful", func() {
-			It("returns no error", func() {
-				mockRepository.EXPECT().RemoveByIds(gomock.Any()).Return([]entity.Task{{}, {}, {}}, nil)
-
-				Expect(tasksSvc.RemoveByIds([]int{id, id + 4, id * 3})).ToNot(HaveOccurred())
-			})
-		})
-
-	})
-
 })
