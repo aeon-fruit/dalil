@@ -71,6 +71,8 @@ gen-test: clean-gen-test
 	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/dao/repository.go -destination=$(TEST_MOCKS_PATH)/tasks/dao/repository_mock.go
 	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/service/service.go -destination=$(TEST_MOCKS_PATH)/tasks/service/service_mock.go
 	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/tasks/controller/controller.go -destination=$(TEST_MOCKS_PATH)/tasks/controller/controller_mock.go
+	$(MOCKGEN) -source=$(APP_ROOT)/internal/pkg/log/log.go -destination=$(TEST_MOCKS_PATH)/log/log_mock.go
+	$(MOCKGEN) -destination=$(TEST_MOCKS_PATH)/logr/logr_mock.go github.com/go-logr/logr LogSink
 .PHONY: gen-test
 
 test-coverage: clean-test-coverage gen-test build

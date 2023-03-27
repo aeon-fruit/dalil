@@ -9,11 +9,15 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-logr/logr"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 
+	"github.com/aeon-fruit/dalil.git/internal/pkg/common/constants"
 	reqctx "github.com/aeon-fruit/dalil.git/internal/pkg/context/request"
 	"github.com/aeon-fruit/dalil.git/internal/pkg/middleware"
+	logMock "github.com/aeon-fruit/dalil.git/test/mocks/log"
 )
 
 type testHandler struct {
@@ -27,7 +31,61 @@ func (th *testHandler) ServeHTTP(_ http.ResponseWriter, r *http.Request) {
 }
 
 var _ = Describe("Middleware", func() {
+
 	const key = "id"
+
+	Describe("LoggingContext", func() {
+		var mockLogger *logMock.MockLogger
+		var mw (func(http.Handler) http.Handler)
+
+		BeforeEach(func() {
+			mockCtrl := gomock.NewController(GinkgoT())
+			mockLogger = logMock.NewMockLogger(mockCtrl)
+			mw = middleware.LoggingContext(mockLogger)
+		})
+
+		It("returns a non-nil function", func() {
+			Expect(mw).NotTo(BeNil())
+		})
+
+		It("has a return that returns a non-nil http.Handler", func() {
+			next := &testHandler{}
+			handler := mw(next)
+
+			Expect(handler).NotTo(BeNil())
+		})
+
+		Describe("http.Handler returned by the returned middleware", func() {
+			var next *testHandler
+			var handler http.Handler
+
+			BeforeEach(func() {
+				next = &testHandler{}
+				handler = mw(next)
+
+				Expect(handler).NotTo(BeNil())
+			})
+
+			When("used", func() {
+				recorder := httptest.NewRecorder()
+				request := httptest.NewRequest("", "http://url", strings.NewReader(""))
+
+				BeforeEach(func() {
+					mockLogger.EXPECT().WithName(constants.AppName).Times(1)
+					handler.ServeHTTP(recorder, request)
+				})
+
+				It("augments the request context by a logger named after the app", func() {
+					Expect(next.callCount).NotTo(BeZero())
+					Expect(next.request).NotTo(BeNil())
+
+					Expect(logr.FromContext(next.request.Context())).NotTo(BeNil())
+				})
+			})
+
+		})
+
+	})
 
 	Describe("PathParamContextInt", func() {
 		var mw (func(http.Handler) http.Handler)
@@ -137,10 +195,17 @@ var _ = Describe("Middleware", func() {
 
 	Describe("PathParamContextString", func() {
 		const customPattern = "[a-zA-Z]+-[0-9]+"
-		var mw (func(http.Handler) http.Handler)
+		var pattern string
 
-		for _, pattern := range []string{"", customPattern} {
+		for _, patternOption := range []string{customPattern, ""} {
+
+			BeforeEach(func() {
+				pattern = patternOption
+			})
+
 			Context(fmt.Sprintf("the pattern is '%v'", pattern), func() {
+				var mw (func(http.Handler) http.Handler)
+
 				BeforeEach(func() {
 					mw = middleware.PathParamContextString(key, pattern)
 				})
