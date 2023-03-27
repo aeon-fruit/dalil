@@ -10,7 +10,6 @@ type Service interface {
 	GetAll() ([]model.GetTaskResponse, error)
 	Upsert(request model.UpsertTaskRequest) (model.GetTaskResponse, error)
 	RemoveById(id int) error
-	RemoveByIds(ids []int) error
 }
 
 type serviceImpl struct {
@@ -63,11 +62,6 @@ func (service *serviceImpl) GetById(id int) (model.GetTaskResponse, error) {
 
 func (service *serviceImpl) RemoveById(id int) error {
 	_, err := service.repository.RemoveById(id)
-	return err
-}
-
-func (service *serviceImpl) RemoveByIds(ids []int) error {
-	_, err := service.repository.RemoveByIds(ids)
 	return err
 }
 

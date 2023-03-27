@@ -26,6 +26,8 @@ func main() {
 
 	addr := fmt.Sprintf(":%v", appConfig.AppPort)
 	handler := getHandler(logger)
+
+	logger.Info("Server started", "addr", addr)
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		logger.Error(err, "Failed to start the server", "addr", addr)
 	}
@@ -41,8 +43,8 @@ func getHandler(logger log.Logger) http.Handler {
 
 	r.Use(middleware.LoggingContext(logger))
 	r.Use(chiMiddleware.RequestID)
-	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.Logger)
+	r.Use(chiMiddleware.Recoverer)
 	r.Use(chiMiddleware.Timeout(60 * time.Second))
 
 	r.Use(render.SetContentType(render.ContentTypeJSON))
